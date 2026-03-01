@@ -390,6 +390,25 @@ class Track:
         )
         return get_data(arr, slices, self.backend)
 
+    def __setitem__(self, key: object, value: object) -> None:
+        """Slice-based data write.
+
+        Examples::
+
+            track["chr1"] = data
+            track["chr1", 100:200] = data
+            track["chr1", 100:200, :] = data
+            track["chr1", 100:200, "sample_A"] = data
+            track["chr1", 100:200, 0:5] = data
+        """
+        contig, pos_slice, col_index = self._parse_getitem_key(key)
+        arr = self.zarr_array(contig)
+
+        if self.has_columns:
+            arr[pos_slice, col_index] = value  # type: ignore[index,assignment]
+        else:
+            arr[pos_slice] = value  # type: ignore[assignment]
+
     def __repr__(self) -> str:
         parts = [f"dtype={self.dtype!r}"]
         if self.has_columns:
