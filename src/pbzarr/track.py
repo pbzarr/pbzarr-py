@@ -8,11 +8,13 @@ import numpy as np
 import zarr
 from zarr.core.dtype.npy.string import VariableLengthUTF8
 
-from pbzarr._backends import Backend
+from pbzarr._backends import Backend, get_data
 from pbzarr.exceptions import (
     ColumnNotFoundError,
     ContigNotFoundError,
+    InvalidRegionError,
 )
+from pbzarr.region import Region, parse_region
 
 if TYPE_CHECKING:
     from pbzarr.store import PbzStore
@@ -176,6 +178,217 @@ class Track:
             raise ColumnNotFoundError(
                 name, available=self.columns
             ) from None
+
+    def _resolve_position_slice(
+        self, region: Region, contig_length: int
+    ) -> slice:
+        """Turn a Region into a validated position slice."""
+        start = region.start if region.start is not None else 0
+        end = region.end if region.end is not None else contig_length
+
+        if end > contig_length:
+            raise InvalidRegionError(
+                f"End position ({end}) exceeds contig length ({contig_length}) "
+                f"for contig {region.contig!r}."
+            )
+        return slice(start, end)
+
+    def _resolve_column_slice(
+        self, columns: str | list[str] | None
+    ) -> int | list[int] | slice:
+        """Resolve column argument to a zarr-compatible index.
+
+        Returns an int for a single string (squeeze), a list[int] for a
+        list of names (no squeeze), or slice(None) for None (all columns).
+        """
+        if columns is None:
+            if self.has_columns:
+                return slice(None)
+            return slice(None)
+
+        if not self.has_columns:
+            raise ColumnNotFoundError(
+                columns if isinstance(columns, str) else columns[0],
+                available=None,
+            )
+
+        if isinstance(columns, str):
+            return self._column_name_to_idx(columns)
+
+        indices: list[int] = []
+        for name in columns:
+            indices.append(self._column_name_to_idx(name))
+        return indices
+
+    def query(
+        self,
+        region: str | tuple,
+        *,
+        columns: str | list[str] | None = None,
+        one_based: bool = False,
+    ) -> object:
+        """Query data for a genomic region.
+
+        Parameters
+        ----------
+        region
+            Region string (``"chr1:1000-2000"``) or tuple
+            (``("chr1", 1000, 2000)``).
+        columns
+            Column filter. A single string returns a 1D array (squeeze).
+            A list of strings returns a 2D array. ``None`` returns all
+            columns.
+        one_based
+            If ``True``, interpret coordinates as 1-based inclusive.
+
+        Returns
+        -------
+        object
+            numpy.ndarray or dask.array.Array depending on backend.
+        """
+        parsed = parse_region(region, one_based=one_based)
+        self._store.validate_contig(parsed.contig)
+        contig_length = self._store.contig_lengths[parsed.contig]
+        pos_slice = self._resolve_position_slice(parsed, contig_length)
+        col_index = self._resolve_column_slice(columns)
+
+        arr = self.zarr_array(parsed.contig)
+
+        slices: tuple = (
+            (pos_slice, col_index) if self.has_columns else (pos_slice,)
+        )
+        return get_data(arr, slices, self.backend)
+
+    def _parse_getitem_key(
+        self, key: object
+    ) -> tuple[str, slice, int | list[int] | slice]:
+        """Parse ``__getitem__`` key into (contig, pos_slice, col_index).
+
+        Supports:
+          track["chr1"]                     -> whole contig
+          track["chr1", 100:200]            -> position range, all columns
+          track["chr1", 100:200, :]         -> same
+          track["chr1", 100:200, "colA"]    -> single column (squeeze)
+          track["chr1", 100:200, 0:5]       -> column integer slice
+          track["chr1", 100:200, 3]         -> single column by index (squeeze)
+        """
+        if isinstance(key, str):
+            contig = key
+            pos_slice = slice(None)
+            col_index: int | list[int] | slice = slice(None)
+            self._store.validate_contig(contig)
+            contig_length = self._store.contig_lengths[contig]
+            pos_slice = slice(0, contig_length)
+            return contig, pos_slice, col_index
+
+        if not isinstance(key, tuple):
+            raise InvalidRegionError(
+                f"Track key must be a string or tuple, got {type(key).__name__}"
+            )
+
+        if len(key) < 1 or len(key) > 3:
+            raise InvalidRegionError(
+                f"Track key must have 1-3 elements, got {len(key)}"
+            )
+
+        contig = key[0]
+        if not isinstance(contig, str):
+            raise InvalidRegionError(
+                f"First element (contig) must be a string, got {type(contig).__name__}"
+            )
+        self._store.validate_contig(contig)
+        contig_length = self._store.contig_lengths[contig]
+
+        if len(key) == 1:
+            return contig, slice(0, contig_length), slice(None)
+
+        pos_key = key[1]
+        if isinstance(pos_key, slice):
+            start = pos_key.start if pos_key.start is not None else 0
+            stop = pos_key.stop if pos_key.stop is not None else contig_length
+            if stop > contig_length:
+                raise InvalidRegionError(
+                    f"End position ({stop}) exceeds contig length "
+                    f"({contig_length}) for contig {contig!r}."
+                )
+            pos_slice = slice(start, stop)
+        elif isinstance(pos_key, int):
+            if pos_key < 0:
+                raise InvalidRegionError(
+                    f"Position must be non-negative, got {pos_key}"
+                )
+            if pos_key >= contig_length:
+                raise InvalidRegionError(
+                    f"Position ({pos_key}) exceeds contig length "
+                    f"({contig_length}) for contig {contig!r}."
+                )
+            pos_slice = slice(pos_key, pos_key + 1)
+        else:
+            raise InvalidRegionError(
+                f"Position must be a slice or int, got {type(pos_key).__name__}"
+            )
+
+        if len(key) == 2:
+            return contig, pos_slice, slice(None)
+
+        col_key = key[2]
+        col_index = self._resolve_getitem_col(col_key)
+        return contig, pos_slice, col_index
+
+    def _resolve_getitem_col(
+        self, col_key: object
+    ) -> int | list[int] | slice:
+        """Resolve the column component of a __getitem__ key."""
+        if isinstance(col_key, slice):
+            return col_key
+        if isinstance(col_key, int):
+            if self.has_columns:
+                num = self.num_columns
+                assert num is not None
+                if col_key < 0 or col_key >= num:
+                    raise ColumnNotFoundError(
+                        str(col_key),
+                        available=self.columns,
+                    )
+            return col_key
+        if isinstance(col_key, str):
+            return self._column_name_to_idx(col_key)
+        if isinstance(col_key, list):
+            indices: list[int] = []
+            for item in col_key:
+                if isinstance(item, str):
+                    indices.append(self._column_name_to_idx(item))
+                elif isinstance(item, int):
+                    indices.append(item)
+                else:
+                    raise InvalidRegionError(
+                        f"Column list items must be str or int, "
+                        f"got {type(item).__name__}"
+                    )
+            return indices
+        raise InvalidRegionError(
+            f"Column key must be a slice, int, str, or list, "
+            f"got {type(col_key).__name__}"
+        )
+
+    def __getitem__(self, key: object) -> object:
+        """Slice-based data access.
+
+        Examples::
+
+            track["chr1"]
+            track["chr1", 100:200]
+            track["chr1", 100:200, :]
+            track["chr1", 100:200, "sample_A"]
+            track["chr1", 100:200, 0:5]
+        """
+        contig, pos_slice, col_index = self._parse_getitem_key(key)
+        arr = self.zarr_array(contig)
+
+        slices: tuple = (
+            (pos_slice, col_index) if self.has_columns else (pos_slice,)
+        )
+        return get_data(arr, slices, self.backend)
 
     def __repr__(self) -> str:
         parts = [f"dtype={self.dtype!r}"]

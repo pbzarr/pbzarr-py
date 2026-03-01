@@ -35,7 +35,7 @@ class Backend(Enum):
 def _import_dask():  # type: ignore[no-untyped-def]
     """Lazy import dask.array with a clear error message."""
     try:
-        import dask.array as da
+        import dask.array as da  # type: ignore[no-untyped-def]
 
         return da
     except ImportError:

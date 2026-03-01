@@ -13,6 +13,7 @@ from pbzarr.exceptions import (
 )
 from pbzarr.region import Region, parse_region
 from pbzarr.store import PbzStore, create_store, open_store
+from pbzarr.track import Track
 
 create = create_store
 open = open_store
@@ -25,6 +26,7 @@ __all__ = [
     "PbzError",
     "PbzStore",
     "Region",
+    "Track",
     "TrackNotFoundError",
     "create",
     "create_store",
