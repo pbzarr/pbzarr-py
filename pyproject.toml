@@ -1,0 +1,44 @@
+[project]
+authors = [{name = "Cade Mirchandani", email = "cmirchan@ucsc.edu"}]
+dependencies = ["zarr>=3.0", "numpy"]
+name = "pbzarr"
+requires-python = ">= 3.11"
+version = "0.1.0"
+
+[project.optional-dependencies]
+dask = ["dask[array]"]
+xarray = ["xarray", "dask[array]"]
+all = ["dask[array]", "xarray"]
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling"]
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["osx-arm64"]
+
+[tool.pixi.pypi-dependencies]
+pbzarr = { path = ".", editable = true }
+
+[tool.pixi.dependencies]
+numpy = "*"
+zarr = ">=3.0"
+pytest = "*"
+mypy = ">=1.19.1,<2"
+
+[tool.pixi.tasks]
+test = "pytest tests/ -v"
+typecheck = "mypy src/pbzarr/"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = ["dask.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
