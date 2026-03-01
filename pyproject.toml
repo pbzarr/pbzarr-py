@@ -20,6 +20,7 @@ platforms = ["osx-arm64"]
 
 [tool.pixi.pypi-dependencies]
 pbzarr = { path = ".", editable = true }
+dask = { version = "*", extras = ["array"] }
 
 [tool.pixi.dependencies]
 numpy = "*"
