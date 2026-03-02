@@ -7,8 +7,7 @@ version = "0.1.0"
 
 [project.optional-dependencies]
 dask = ["dask[array]"]
-xarray = ["xarray", "dask[array]"]
-all = ["dask[array]", "xarray"]
+all = ["dask[array]"]
 
 [build-system]
 build-backend = "hatchling.build"
