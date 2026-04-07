@@ -668,7 +668,7 @@ packages:
 - pypi: ./
   name: pbzarr
   version: 0.1.0
-  sha256: c386e9c25521ef4bebead123a23daec98a17f5f0e1c232332d0d6cb0c30ce7bc
+  sha256: 8901b74902eddfe14add87aa81caa095cc7027cc32077f59e9a5d85d8d4f9ed4
   requires_dist:
   - zarr>=3.0
   - numpy
