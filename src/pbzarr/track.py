@@ -50,8 +50,8 @@ _DEFAULT_COLUMN_CHUNK_SIZE = 16
 class Track:
     """A PBZ track wrapping a zarr group under ``/tracks/{name}/``.
 
-    Do not instantiate directly — use :meth:`PbzStore.create_track` or
-    :meth:`PbzStore.__getitem__` instead.
+    Do not instantiate directly — use [`PbzStore.create_track`][pbzarr.PbzStore.create_track]
+    or `store[name]` indexing instead.
     """
 
     def __init__(self, group: zarr.Group, store: PbzStore) -> None:
@@ -374,13 +374,13 @@ class Track:
     def __getitem__(self, key: object) -> object:
         """Slice-based data access.
 
-        Examples::
-
-            track["chr1"]
-            track["chr1", 100:200]
-            track["chr1", 100:200, :]
-            track["chr1", 100:200, "sample_A"]
-            track["chr1", 100:200, 0:5]
+        Examples
+        --------
+        >>> track["chr1"]
+        >>> track["chr1", 100:200]
+        >>> track["chr1", 100:200, :]
+        >>> track["chr1", 100:200, "sample_A"]
+        >>> track["chr1", 100:200, 0:5]
         """
         contig, pos_slice, col_index = self._parse_getitem_key(key)
         arr = self.zarr_array(contig)
@@ -393,13 +393,13 @@ class Track:
     def __setitem__(self, key: object, value: object) -> None:
         """Slice-based data write.
 
-        Examples::
-
-            track["chr1"] = data
-            track["chr1", 100:200] = data
-            track["chr1", 100:200, :] = data
-            track["chr1", 100:200, "sample_A"] = data
-            track["chr1", 100:200, 0:5] = data
+        Examples
+        --------
+        >>> track["chr1"] = data
+        >>> track["chr1", 100:200] = data
+        >>> track["chr1", 100:200, :] = data
+        >>> track["chr1", 100:200, "sample_A"] = data
+        >>> track["chr1", 100:200, 0:5] = data
         """
         contig, pos_slice, col_index = self._parse_getitem_key(key)
         arr = self.zarr_array(contig)

@@ -22,8 +22,8 @@ _PBZ_VERSION = "0.1"
 class PbzStore:
     """A PBZ store wrapping a zarr v3 root group.
 
-    Do not instantiate directly — use :func:`pbzarr.create` or
-    :func:`pbzarr.open` instead.
+    Do not instantiate directly — use [`pbzarr.create_store`][] or
+    [`pbzarr.open_store`][] instead.
     """
 
     def __init__(self, root: zarr.Group, backend: Backend = Backend.NUMPY) -> None:
@@ -98,7 +98,7 @@ class PbzStore:
             return False
 
     def create_track(self, name: str, **kwargs: Any) -> Track:
-        """Create a new track. See :meth:`pbzarr.track.Track.create`."""
+        """Create a new track. See [`Track.create`][pbzarr.Track.create]."""
         from pbzarr.track import Track
 
         return Track.create(self, name, **kwargs)
