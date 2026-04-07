@@ -77,7 +77,7 @@ class Track:
     @property
     def metadata(self) -> dict:
         """Full ``pbz_track`` metadata dict."""
-        meta = self._group.attrs["pbz_track"]
+        meta = self._group.attrs["perbase_zarr_track"]
         assert isinstance(meta, dict)
         return dict(meta)
 
@@ -497,7 +497,7 @@ class Track:
         tracks_group = store.root["tracks"]
         assert isinstance(tracks_group, zarr.Group)
         track_group = tracks_group.create_group(name)
-        track_group.attrs["pbz_track"] = track_meta
+        track_group.attrs["perbase_zarr_track"] = track_meta
 
         if has_columns:
             assert columns is not None  # for type checker

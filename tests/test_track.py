@@ -65,7 +65,7 @@ class TestCreateTrack:
 
 
 class TestTrackMetadata:
-    """Tests for pbz_track metadata attributes."""
+    """Tests for perbase_zarr_track metadata attributes."""
 
     def test_dtype(self, columnar_track):
         assert columnar_track.dtype == "uint32"

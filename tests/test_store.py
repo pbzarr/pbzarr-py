@@ -46,7 +46,7 @@ class TestCreateStore:
         assert isinstance(store.root, zarr.Group)
 
     def test_root_pbz_metadata(self, store):
-        meta = store.root.attrs["pbz"]
+        meta = store.root.attrs["perbase_zarr"]
         assert meta["version"] == _PBZ_VERSION
 
     def test_contigs_array(self, store):
@@ -161,7 +161,7 @@ class TestOpenStoreValidation:
             open_store(path, mode="w")
 
     def test_missing_pbz_attr_raises(self, tmp_path):
-        """Store without 'pbz' root attribute is rejected."""
+        """Store without 'perbase_zarr' root attribute is rejected."""
         path = tmp_path / "not_pbz.zarr"
         root = zarr.open_group(str(path), mode="w")
         contigs_arr = root.create_array(
@@ -169,14 +169,14 @@ class TestOpenStoreValidation:
         )
         contigs_arr[:] = np.array(["chr1"], dtype=object)
         root.create_array("contig_lengths", data=np.array([100], dtype="int64"))
-        with pytest.raises(PbzError, match="missing 'pbz' attribute"):
+        with pytest.raises(PbzError, match="missing 'perbase_zarr' attribute"):
             open_store(path)
 
     def test_missing_version_raises(self, tmp_path):
-        """Store with 'pbz' attr but no 'version' key is rejected."""
+        """Store with 'perbase_zarr' attr but no 'version' key is rejected."""
         path = tmp_path / "no_ver.zarr"
         root = zarr.open_group(str(path), mode="w")
-        root.attrs["pbz"] = {}
+        root.attrs["perbase_zarr"] = {}
         contigs_arr = root.create_array(
             "contigs", shape=(1,), dtype=VariableLengthUTF8()
         )
@@ -189,7 +189,7 @@ class TestOpenStoreValidation:
         """Store without 'contigs' array is rejected."""
         path = tmp_path / "no_contigs.zarr"
         root = zarr.open_group(str(path), mode="w")
-        root.attrs["pbz"] = {"version": "0.1"}
+        root.attrs["perbase_zarr"] = {"version": "0.1"}
         root.create_array("contig_lengths", data=np.array([100], dtype="int64"))
         with pytest.raises(PbzError, match="missing 'contigs' array"):
             open_store(path)
@@ -198,7 +198,7 @@ class TestOpenStoreValidation:
         """Store without 'contig_lengths' array is rejected."""
         path = tmp_path / "no_lengths.zarr"
         root = zarr.open_group(str(path), mode="w")
-        root.attrs["pbz"] = {"version": "0.1"}
+        root.attrs["perbase_zarr"] = {"version": "0.1"}
         contigs_arr = root.create_array(
             "contigs", shape=(1,), dtype=VariableLengthUTF8()
         )

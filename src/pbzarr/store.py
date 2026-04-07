@@ -84,7 +84,7 @@ class PbzStore:
         except KeyError:
             raise TrackNotFoundError(name, available=self.tracks()) from None
 
-        if not isinstance(group, zarr.Group) or "pbz_track" not in group.attrs:
+        if not isinstance(group, zarr.Group) or "perbase_zarr_track" not in group.attrs:
             raise TrackNotFoundError(name, available=self.tracks())
 
         return Track(group=group, store=self)
@@ -152,7 +152,7 @@ def create_store(
     store = _resolve_store(path, storage_options=storage_options)
     root = zarr.open_group(store, mode="w")
 
-    root.attrs["pbz"] = {"version": _PBZ_VERSION}
+    root.attrs["perbase_zarr"] = {"version": _PBZ_VERSION}
 
     contigs_arr = root.create_array(
         "contigs", shape=(len(contigs),), dtype=VariableLengthUTF8()  # type: ignore[arg-type]
@@ -206,19 +206,19 @@ def open_store(
     store = _resolve_store(path, storage_options=storage_options)
     root = zarr.open_group(store, mode=mode)  # type: ignore[arg-type]
 
-    pbz_meta = root.attrs.get("pbz")
+    pbz_meta = root.attrs.get("perbase_zarr")
     if pbz_meta is None:
         raise PbzError(
-            "Not a PBZ store: missing 'pbz' attribute in root metadata."
+            "Not a PBZ store: missing 'perbase_zarr' attribute in root metadata."
         )
     if not isinstance(pbz_meta, dict):
         raise PbzError(
-            "Not a PBZ store: 'pbz' attribute must be a mapping."
+            "Not a PBZ store: 'perbase_zarr' attribute must be a mapping."
         )
     version = pbz_meta.get("version")
     if version is None:
         raise PbzError(
-            "Not a PBZ store: missing 'version' in root 'pbz' attribute."
+            "Not a PBZ store: missing 'version' in root 'perbase_zarr' attribute."
         )
 
     if "contigs" not in root:
@@ -245,7 +245,7 @@ def _find_tracks(group: zarr.Group, prefix: str = "") -> list[str]:
     result: list[str] = []
     for name, obj in group.members():
         path = f"{prefix}/{name}" if prefix else name
-        if isinstance(obj, zarr.Group) and "pbz_track" in obj.attrs:
+        if isinstance(obj, zarr.Group) and "perbase_zarr_track" in obj.attrs:
             result.append(path)
         elif isinstance(obj, zarr.Group):
             result.extend(_find_tracks(obj, path))
