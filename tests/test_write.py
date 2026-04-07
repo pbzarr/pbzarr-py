@@ -77,9 +77,7 @@ class TestWriteRange:
         before = scalar_track["chr1", 0:500]
         np.testing.assert_array_equal(before, np.arange(500, dtype="float32"))
         after = scalar_track["chr1", 600:1000]
-        np.testing.assert_array_equal(
-            after, np.arange(600, 1000, dtype="float32")
-        )
+        np.testing.assert_array_equal(after, np.arange(600, 1000, dtype="float32"))
 
 
 # ── column-specific writes ───────────────────────────────────────
@@ -124,7 +122,9 @@ class TestWriteColumns:
 
 class TestWriteReadRoundtrip:
     def test_write_read_matches(self, col_track):
-        data = np.random.default_rng(42).integers(0, 1000, size=(200, 3)).astype("uint32")
+        data = (
+            np.random.default_rng(42).integers(0, 1000, size=(200, 3)).astype("uint32")
+        )
         col_track["chr1", 300:500] = data
         result = col_track.query("chr1:300-500")
         np.testing.assert_array_equal(result, data)

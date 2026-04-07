@@ -42,12 +42,31 @@ dask = { version = "*", extras = ["array"] }
 [tool.pixi.dependencies]
 numpy = "*"
 zarr = ">=3.0"
+
+# --- dev feature: test, lint, typecheck ---
+[tool.pixi.feature.dev.dependencies]
 pytest = "*"
 mypy = ">=1.19.1,<2"
+ruff = "*"
 
-[tool.pixi.tasks]
+[tool.pixi.feature.dev.tasks]
 test = "pytest tests/ -v"
 typecheck = "mypy src/pbzarr/"
+lint = "ruff check src/ tests/"
+fmt = "ruff format src/ tests/"
+fmt-check = "ruff format --check src/ tests/"
+
+# --- build feature: package building ---
+[tool.pixi.feature.build.dependencies]
+python-build = "*"
+
+[tool.pixi.feature.build.tasks]
+build = "python -m build"
+
+# --- environments ---
+[tool.pixi.environments]
+default = { features = ["dev"], solve-group = "default" }
+build = { features = ["build"], solve-group = "default" }
 
 [tool.mypy]
 python_version = "3.11"

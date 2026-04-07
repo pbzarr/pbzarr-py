@@ -9,7 +9,6 @@ from pbzarr.exceptions import (
     InvalidRegionError,
 )
 from pbzarr.store import create_store
-from pbzarr.track import Track
 
 CONTIGS = ["chr1", "chr2"]
 CONTIG_LENGTHS = [1_000, 500]
@@ -108,9 +107,7 @@ class TestQueryOneBased:
     def test_one_based_range(self, scalar_track):
         result = scalar_track.query("chr1:1-10", one_based=True)
         assert result.shape == (10,)
-        np.testing.assert_array_equal(
-            result, np.arange(0, 10, dtype="float32")
-        )
+        np.testing.assert_array_equal(result, np.arange(0, 10, dtype="float32"))
 
     def test_one_based_single_base(self, scalar_track):
         result = scalar_track.query("chr1:1", one_based=True)
@@ -120,9 +117,7 @@ class TestQueryOneBased:
     def test_one_based_tuple(self, scalar_track):
         result = scalar_track.query(("chr1", 1, 10), one_based=True)
         assert result.shape == (10,)
-        np.testing.assert_array_equal(
-            result, np.arange(0, 10, dtype="float32")
-        )
+        np.testing.assert_array_equal(result, np.arange(0, 10, dtype="float32"))
 
 
 # ── query() with column filtering ───────────────────────────────
@@ -144,7 +139,9 @@ class TestQueryColumns:
         assert result.shape == (10, 2)
 
     def test_all_columns_explicit(self, col_track):
-        result = col_track.query("chr1:0-10", columns=["sample_A", "sample_B", "sample_C"])
+        result = col_track.query(
+            "chr1:0-10", columns=["sample_A", "sample_B", "sample_C"]
+        )
         assert result.shape == (10, 3)
 
     def test_column_values_correct(self, col_track):
@@ -243,9 +240,7 @@ class TestGetitemBasic:
 
     def test_data_values(self, scalar_track):
         result = scalar_track["chr1", 0:5]
-        np.testing.assert_array_equal(
-            result, np.arange(5, dtype="float32")
-        )
+        np.testing.assert_array_equal(result, np.arange(5, dtype="float32"))
 
 
 # ── __getitem__ column access ────────────────────────────────────

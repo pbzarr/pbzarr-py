@@ -60,7 +60,7 @@ class PbzStore:
             assert isinstance(arr, zarr.Array)
             lengths = arr[:]
             self._contig_lengths_map = dict(
-                zip(names, (int(l) for l in lengths))  # type: ignore[union-attr]
+                zip(names, (int(v) for v in lengths))  # type: ignore[union-attr]
             )
         return self._contig_lengths_map
 
@@ -155,7 +155,9 @@ def create_store(
     root.attrs["perbase_zarr"] = {"version": _PBZ_VERSION}
 
     contigs_arr = root.create_array(
-        "contigs", shape=(len(contigs),), dtype=VariableLengthUTF8()  # type: ignore[arg-type]
+        "contigs",
+        shape=(len(contigs),),
+        dtype=VariableLengthUTF8(),  # type: ignore[arg-type]
     )
     contigs_arr[:] = np.array(contigs, dtype=object)
 
@@ -212,9 +214,7 @@ def open_store(
             "Not a PBZ store: missing 'perbase_zarr' attribute in root metadata."
         )
     if not isinstance(pbz_meta, dict):
-        raise PbzError(
-            "Not a PBZ store: 'perbase_zarr' attribute must be a mapping."
-        )
+        raise PbzError("Not a PBZ store: 'perbase_zarr' attribute must be a mapping.")
     version = pbz_meta.get("version")
     if version is None:
         raise PbzError(

@@ -150,13 +150,9 @@ class Track:
         try:
             arr = self._group[contig]
         except KeyError:
-            raise ContigNotFoundError(
-                contig, available=self._store.contigs
-            ) from None
+            raise ContigNotFoundError(contig, available=self._store.contigs) from None
         if not isinstance(arr, zarr.Array):
-            raise ContigNotFoundError(
-                contig, available=self._store.contigs
-            )
+            raise ContigNotFoundError(contig, available=self._store.contigs)
         return arr
 
     def _resolve_column_index(self) -> dict[str, int]:
@@ -175,13 +171,9 @@ class Track:
         try:
             return idx_map[name]
         except KeyError:
-            raise ColumnNotFoundError(
-                name, available=self.columns
-            ) from None
+            raise ColumnNotFoundError(name, available=self.columns) from None
 
-    def _resolve_position_slice(
-        self, region: Region, contig_length: int
-    ) -> slice:
+    def _resolve_position_slice(self, region: Region, contig_length: int) -> slice:
         """Turn a Region into a validated position slice."""
         start = region.start if region.start is not None else 0
         end = region.end if region.end is not None else contig_length
@@ -254,9 +246,7 @@ class Track:
 
         arr = self.zarr_array(parsed.contig)
 
-        slices: tuple = (
-            (pos_slice, col_index) if self.has_columns else (pos_slice,)
-        )
+        slices: tuple = (pos_slice, col_index) if self.has_columns else (pos_slice,)
         return get_data(arr, slices, self.backend)
 
     def _parse_getitem_key(
@@ -335,9 +325,7 @@ class Track:
         col_index = self._resolve_getitem_col(col_key)
         return contig, pos_slice, col_index
 
-    def _resolve_getitem_col(
-        self, col_key: object
-    ) -> int | list[int] | slice:
+    def _resolve_getitem_col(self, col_key: object) -> int | list[int] | slice:
         """Resolve the column component of a __getitem__ key."""
         if isinstance(col_key, slice):
             return col_key
@@ -385,9 +373,7 @@ class Track:
         contig, pos_slice, col_index = self._parse_getitem_key(key)
         arr = self.zarr_array(contig)
 
-        slices: tuple = (
-            (pos_slice, col_index) if self.has_columns else (pos_slice,)
-        )
+        slices: tuple = (pos_slice, col_index) if self.has_columns else (pos_slice,)
         return get_data(arr, slices, self.backend)
 
     def __setitem__(self, key: object, value: object) -> None:
@@ -502,7 +488,9 @@ class Track:
         if has_columns:
             assert columns is not None  # for type checker
             cols_arr = track_group.create_array(
-                "columns", shape=(len(columns),), dtype=VariableLengthUTF8()  # type: ignore[arg-type]
+                "columns",
+                shape=(len(columns),),
+                dtype=VariableLengthUTF8(),  # type: ignore[arg-type]
             )
             cols_arr[:] = np.array(columns, dtype=object)
 

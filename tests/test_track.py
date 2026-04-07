@@ -11,7 +11,7 @@ from pbzarr.exceptions import (
     PbzError,
     TrackNotFoundError,
 )
-from pbzarr.store import PbzStore, create_store
+from pbzarr.store import create_store
 from pbzarr.track import Track
 
 # Use small contig lengths for fast tests.
@@ -93,15 +93,16 @@ class TestTrackMetadata:
 
     def test_description_set(self, store):
         track = store.create_track(
-            "depths2", dtype="uint32", columns=COLUMNS,
-            description="Read depth from BAM files"
+            "depths2",
+            dtype="uint32",
+            columns=COLUMNS,
+            description="Read depth from BAM files",
         )
         assert track.description == "Read depth from BAM files"
 
     def test_source_set(self, store):
         track = store.create_track(
-            "depths2", dtype="uint32", columns=COLUMNS,
-            source="perbase v0.1.0"
+            "depths2", dtype="uint32", columns=COLUMNS, source="perbase v0.1.0"
         )
         assert track.source == "perbase v0.1.0"
 
@@ -114,8 +115,7 @@ class TestTrackMetadata:
 
     def test_extra_metadata(self, store):
         track = store.create_track(
-            "depths2", dtype="uint32", columns=COLUMNS,
-            extra_metadata={"min_depth": 10}
+            "depths2", dtype="uint32", columns=COLUMNS, extra_metadata={"min_depth": 10}
         )
         assert track.metadata["min_depth"] == 10
 
@@ -236,7 +236,17 @@ class TestAllDtypes:
 
     @pytest.mark.parametrize(
         "dtype_str",
-        ["uint8", "uint16", "uint32", "int8", "int16", "int32", "float32", "float64", "bool"],
+        [
+            "uint8",
+            "uint16",
+            "uint32",
+            "int8",
+            "int16",
+            "int32",
+            "float32",
+            "float64",
+            "bool",
+        ],
     )
     def test_create_dtype(self, store, dtype_str):
         track = store.create_track(f"track_{dtype_str}", dtype=dtype_str)

@@ -156,9 +156,7 @@ def _parse_tuple(region: tuple, *, one_based: bool) -> Region:
                 f"Position must be an integer, got {type(position).__name__}"
             )
         if position < 0:
-            raise InvalidRegionError(
-                f"Position must be non-negative, got {position}"
-            )
+            raise InvalidRegionError(f"Position must be non-negative, got {position}")
         start = position
         if one_based:
             start = start - 1
@@ -179,13 +177,9 @@ def _parse_tuple(region: tuple, *, one_based: bool) -> Region:
                 f"{type(start).__name__} and {type(end).__name__}"
             )
         if start < 0:
-            raise InvalidRegionError(
-                f"Start must be non-negative, got {start}"
-            )
+            raise InvalidRegionError(f"Start must be non-negative, got {start}")
         if end < 0:
-            raise InvalidRegionError(
-                f"End must be non-negative, got {end}"
-            )
+            raise InvalidRegionError(f"End must be non-negative, got {end}")
 
         if one_based:
             start = start - 1
@@ -218,6 +212,4 @@ def _validate_start_end(start: int, end: int) -> None:
             "This can happen when using one_based=True with position 0."
         )
     if start >= end:
-        raise InvalidRegionError(
-            f"Start ({start}) must be less than end ({end})."
-        )
+        raise InvalidRegionError(f"Start ({start}) must be less than end ({end}).")

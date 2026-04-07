@@ -85,7 +85,5 @@ def get_data(
     """
     fn = _DISPATCH.get(backend)
     if fn is None:
-        raise ValueError(
-            f"No dispatch function registered for backend: {backend!r}"
-        )
+        raise ValueError(f"No dispatch function registered for backend: {backend!r}")
     return fn(zarr_array, slices)

@@ -6,8 +6,8 @@ import pytest
 dask = pytest.importorskip("dask")
 import dask.array as da  # noqa: E402
 
-from pbzarr._backends import Backend
-from pbzarr.store import PbzStore, create_store, open_store
+from pbzarr._backends import Backend  # noqa: E402
+from pbzarr.store import create_store, open_store  # noqa: E402
 
 CONTIGS = ["chr1", "chr2"]
 CONTIG_LENGTHS = [1_000, 500]
@@ -64,9 +64,7 @@ class TestDaskQuery:
         result = scalar_track.query("chr1:0-10")
         assert isinstance(result, da.Array)
         assert result.shape == (10,)
-        np.testing.assert_array_equal(
-            result.compute(), np.arange(10, dtype="float32")
-        )
+        np.testing.assert_array_equal(result.compute(), np.arange(10, dtype="float32"))
 
     def test_whole_contig(self, col_track):
         result = col_track.query("chr1")
@@ -83,9 +81,7 @@ class TestDaskQuery:
 
     def test_one_based(self, scalar_track):
         result = scalar_track.query("chr1:1-10", one_based=True).compute()
-        np.testing.assert_array_equal(
-            result, np.arange(0, 10, dtype="float32")
-        )
+        np.testing.assert_array_equal(result, np.arange(0, 10, dtype="float32"))
 
     def test_tuple_region(self, col_track):
         result = col_track.query(("chr1", 50, 100))
