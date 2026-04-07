@@ -1,6 +1,6 @@
 [project]
 name = "pbzarr"
-version = "0.1.0"
+version = "0.1.1"
 description = "A Zarr v3 convention for per-base resolution genomic data"
 authors = [{name = "Cade Mirchandani", email = "cmirchan@ucsc.edu"}]
 license = {text = "MIT"}

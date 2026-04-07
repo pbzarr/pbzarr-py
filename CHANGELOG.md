@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/pbzarr/pbzarr-py/compare/v0.1.0...v0.1.1) (2026-04-07)
+
+
+### Bug Fixes
+
+* Update platforms in pyproject.toml ([5b622d4](https://github.com/pbzarr/pbzarr-py/commit/5b622d41495f0a19b738cce1d92ebeae58b8908d))
+
 ## 0.1.0 (2026-04-07)
 
 
