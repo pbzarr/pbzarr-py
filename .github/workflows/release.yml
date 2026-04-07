@@ -35,9 +35,9 @@ jobs:
       - uses: prefix-dev/setup-pixi@v0.9.4
         with:
           pixi-version: v0.66.0
-          frozen: true
-          environments: build
+          run-install: false
 
+      - run: pixi install -e build --frozen
       - run: pixi run -e build build
 
       - uses: pypa/gh-action-pypi-publish@release/v1
