@@ -1,9 +1,27 @@
 [project]
-authors = [{name = "Cade Mirchandani", email = "cmirchan@ucsc.edu"}]
-dependencies = ["zarr>=3.0", "numpy"]
 name = "pbzarr"
-requires-python = ">= 3.11"
 version = "0.1.0"
+description = "A Zarr v3 convention for per-base resolution genomic data"
+authors = [{name = "Cade Mirchandani", email = "cmirchan@ucsc.edu"}]
+license = {text = "MIT"}
+requires-python = ">= 3.11"
+readme = "README.md"
+keywords = ["zarr", "genomics", "bioinformatics", "depth", "methylation"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = ["zarr>=3.0", "numpy"]
+
+[project.urls]
+Homepage = "https://github.com/pbzarr/pbzarr-py"
+Repository = "https://github.com/pbzarr/pbzarr-py"
+Specification = "https://github.com/pbzarr/pbzarr-spec"
 
 [project.optional-dependencies]
 dask = ["dask[array]"]
